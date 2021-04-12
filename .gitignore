@@ -133,3 +133,6 @@ data/raw/*
 
 # MacOS specific file 
 .DS_Store
+
+# IDEA specific folder
+.vscode
