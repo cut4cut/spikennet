@@ -5,7 +5,10 @@ import requests
 import numpy as np
 
 from pathlib import Path
+from scipy import integrate
 from torchvision.datasets.utils import download_url
+
+import matplotlib.pyplot as plt
 
 
 class PhysioNet(object):
@@ -17,6 +20,7 @@ class PhysioNet(object):
 
     @staticmethod
     def calc_disk_usage(path: str) -> float:
+
         disk_usage = sum(
                             d.stat().st_size for d
                             in os.scandir(path)
@@ -47,6 +51,7 @@ class PhysioNet(object):
         return True
 
     def load(self, dataset_name: str) -> bool:
+
         url = self.template_url.format(dataset_name)
         root = self.template_root.format(dataset_name)
 
@@ -54,3 +59,31 @@ class PhysioNet(object):
         res = self.recur_load(url, root)
 
         return res
+
+
+class DynamicSystem(object):
+
+    def __init__(self, dyn_sys_func):
+        self.dyn_sys_func = dyn_sys_func
+        self.dyn_values = None
+
+    def integrate(self, init_val: np.array, time: np.array):
+
+        dyn_values, infodict = integrate.odeint(self.dyn_sys_func,
+                                                init_val,
+                                                time,
+                                                full_output=True)
+        self.dyn_values = dyn_values
+
+        return (dyn_values, infodict)
+
+    def plot(self, time: np.array):
+
+        fig, ax = plt.subplots(1, 1, figsize=(16, 8))
+
+        for dt_slice in self.dyn_values.T:
+            plt.plot(time, dt_slice)
+
+        plt.xlabel('time')
+        plt.ylabel('states of system')
+        plt.title('Evolution of dynamical system')

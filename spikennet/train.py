@@ -1,5 +1,5 @@
 import os
-from utils.physionet import PhysioNet
+from utils.dataset import PhysioNet
 
 
 if __name__ == '__main__':
