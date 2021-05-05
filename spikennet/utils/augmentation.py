@@ -17,6 +17,7 @@ class DataGenerator(object):
         `Time Series Data Augmentation for Deep Learning: A Survey
         <https://arxiv.org/abs/2002.12478>."""
 
+        data = data.T.copy()
         (N, M) = data.shape
         tmp_data = np.fft.rfft(data, axis=1)
         len_ = tmp_data.shape[1]
@@ -24,7 +25,7 @@ class DataGenerator(object):
         phases = np.random.uniform(low=0, high=2*np.pi, size=(N, len_))
         tmp_data *= np.exp(1j*phases)
 
-        return np.real(np.fft.irfft(tmp_data, n=M, axis=1))
+        return np.real(np.fft.irfft(tmp_data, n=M, axis=1)).T
 
     @staticmethod
     def rand_curve(data: np.array,
@@ -36,8 +37,10 @@ class DataGenerator(object):
         in the paper `Data Augmentation of Wearable Sensor Data
         for Parkinson's Disease Monitoring using Convolutional Neural Networks
         <https://arxiv.org/abs/1706.00527>
-        <https://github.com/terryum/Data-Augmentation-For-Wearable-Sensor-Data>`."""
+        <https://github.com/terryum/\\
+            Data-Augmentation-For-Wearable-Sensor-Data>`."""
 
+        data = data.T.copy()
         (N, M) = data.shape
         x_range = np.arange(N)
         tmp_data = np.empty_like(data)
@@ -48,45 +51,7 @@ class DataGenerator(object):
             cs = CubicSpline(xx, yy[:, i])
             tmp_data[:, i] = cs(x_range)
 
-        return tmp_data
-
-    @staticmethod
-    def __axangle2mat(axis, angle):
-        (x, y) = axis
-
-        n = np.sqrt(x*x + y*y)
-        x = x/n
-        y = y/n
-        z = 0
-
-        c = np.cos(angle); s = np.sin(angle); C = 1-c
-        xs = x*s;   ys = y*s;   zs = z*s
-        xC = x*C;   yC = y*C;   zC = z*C
-        xyC = x*yC; yzC = y*zC; zxC = z*xC
-
-        return np.array([[ x*xC+c,   xyC-zs],
-                         [ xyC+zs,   y*yC+c] ])
-
-    #@staticmethod
-    def rotate(self, data: np.array) -> np.array:
-
-        r"""Apllies data augmentation by rotation as described in the paper
-        `Data Augmentation of Wearable Sensor Data for Parkinson's Disease
-        Monitoring using Convolutional Neural Networks
-        <https://arxiv.org/abs/1706.00527>
-        <https://github.com/terryum/Data-Augmentation-For-Wearable-Sensor-Data>`."""
-
-        (N, M) = data.shape
-
-        axis = np.random.uniform(low=-1, high=1, size=M)
-        angle = np.random.uniform(low=-np.pi, high=np.pi)
-
-        if M == 2:
-            tmp = np.matmul(data, self.__axangle2mat(axis, angle))
-        else:
-            tmp = np.matmul(data, axangle2mat(axis, angle))
-
-        return tmp
+        return tmp_data.T
 
     @staticmethod
     def permutate(data: np.array,
@@ -97,10 +62,11 @@ class DataGenerator(object):
         `Data Augmentation of Wearable Sensor Data for Parkinson's Disease
         Monitoring using Convolutional Neural Networks
         <https://arxiv.org/abs/1706.00527>
-        <https://github.com/terryum/Data-Augmentation-For-Wearable-Sensor-Data>`."""
+        <https://github.com/terryum/\\
+            Data-Augmentation-For-Wearable-Sensor-Data>`."""
 
         (N, M) = data.shape
-        X_new = np.zeros((N, M))
+        tmp_data = np.zeros((N, M))
         idx = np.random.permutation(nPerm)
         bWhile = True
         pp = 0
@@ -119,7 +85,12 @@ class DataGenerator(object):
 
         for ii in range(nPerm):
             x_temp = data[segs[idx[ii]]:segs[idx[ii]+1], :]
-            X_new[pp:pp+len(x_temp), :] = x_temp
+            tmp_data[pp:pp+len(x_temp), :] = x_temp
             pp += len(x_temp)
 
-        return X_new
+        return tmp_data
+
+    @staticmethod
+    def time_inverse(data: np.array) -> np.array:
+
+        return data[::-1].copy()
