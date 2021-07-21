@@ -131,6 +131,16 @@ dmypy.json
 # Raw data
 data/raw/*
 
+# PDF's file
+*.pdf
+
+# Archive
+*.zip
+*.rar
+
+# Images
+*.png
+
 # MacOS specific file 
 .DS_Store
 
