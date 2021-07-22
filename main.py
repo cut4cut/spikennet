@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from spikennet.learn import dnn_validate
+from spikennet.models import SpikeDNNet, SigmaDNNet
 from spikennet.utils.dataset import ExpData
 from spikennet.utils.logger import get_logger
 from spikennet.utils.prepare import gen_folds
@@ -16,7 +17,7 @@ parser.add_argument('-model',  type=str, default='GB', help="Model")
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    KEY_INDEX = 1
+    KEY_INDEX = 2
 
     logger = get_logger()
 
@@ -30,8 +31,10 @@ if __name__ == '__main__':
     folds, width, split = gen_folds(data, n_folds=25)
     time = np.linspace(0, width, width)
 
+    dnn = SigmaDNNet(2)
+
     (tr_res, vl_res, mse_res, mae_res,
-     r2_res, norms_W_1, norms_W_2) = dnn_validate(folds)
+     r2_res, norms_W_1, norms_W_2) = dnn_validate(dnn, folds)
 
     for i, fold in enumerate(folds):
         tr_target = fold[0][0]
