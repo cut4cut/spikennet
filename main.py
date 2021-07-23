@@ -31,7 +31,7 @@ if __name__ == '__main__':
     folds, width, split = gen_folds(data, n_folds=25)
     time = np.linspace(0, width, width)
 
-    dnn = SigmaDNNet(2)
+    dnn = SpikeDNNet(2)
 
     (tr_res, vl_res, mse_res, mae_res,
      r2_res, norms_W_1, norms_W_2) = dnn_validate(dnn, folds)
