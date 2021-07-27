@@ -8,7 +8,9 @@ from .models import SpikeDNNet, SigmaDNNet
 
 
 def dnn_validate(dnn: Union[SpikeDNNet, SigmaDNNet],
-                 folds: list) -> tuple:
+                 folds: list,
+                 n_epochs: int = 1,
+                 k_points: int = 2) -> tuple:
 
     mse_res = np.ones((len(folds), 2))
     mae_res = np.ones((len(folds), 2))
@@ -26,7 +28,9 @@ def dnn_validate(dnn: Union[SpikeDNNet, SigmaDNNet],
         vl_control = fold[1][1]
 
         snn = dnn
-        target_est = snn.fit(tr_target, tr_control)
+        target_est = snn.fit(tr_target, tr_control,
+                             n_epochs=n_epochs, k_points=k_points)
+                             
         vl_pred = snn.predict(target_est[-1][0], vl_control)
 
         mse_res[i][0] = mean_squared_error(tr_target[:, 0], target_est[:, 0])
