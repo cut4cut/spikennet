@@ -30,7 +30,7 @@ def dnn_validate(dnn: Union[SpikeDNNet, SigmaDNNet],
         snn = dnn
         target_est = snn.fit(tr_target, tr_control,
                              n_epochs=n_epochs, k_points=k_points)
-                             
+
         vl_pred = snn.predict(target_est[-1][0], vl_control)
 
         mse_res[i][0] = mean_squared_error(tr_target[:, 0], target_est[:, 0])

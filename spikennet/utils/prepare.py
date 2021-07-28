@@ -35,7 +35,8 @@ def gen_folds(data: pd.DataFrame,
               freq_bounds: tuple = (0, 5.99),
               tr_perc: float = 0.75,
               t_cols: tuple = (2, 4),
-              win_bounds: tuple = (20, 20)):
+              win_bounds: tuple = (20, 20),
+              transform_flg: bool = False):
 
     folds = []
     from_col, to_col = t_cols
@@ -46,9 +47,15 @@ def gen_folds(data: pd.DataFrame,
     end = width
     for i in range(n_folds):
         fold = []
-        targets = dff_transform(
-                        data.iloc[start:end, from_col:to_col].values,
-                        freq_bounds)
+
+        if transform_flg:
+            targets = dff_transform(
+                            data.iloc[start:end, from_col:to_col].values,
+                            freq_bounds)
+        else:
+            targets = data.iloc[start:end, from_col:to_col].values
+
+        targets = data.iloc[start:end, from_col:to_col].values
         controls = data.iloc[start:end, 5].values
 
         datasets = [(targets[r_bound:split],

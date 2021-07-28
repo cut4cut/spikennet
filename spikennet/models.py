@@ -214,7 +214,7 @@ class SigmaDNNet(object):
         self.mat_W_1 = None
         self.mat_W_2 = None
 
-        self.init_mat_W_1 = mat_W_1 or 20 * np.ones((dim, dim))
+        self.init_mat_W_1 = mat_W_1 or 0.1 * np.ones((dim, dim))
         self.init_mat_W_2 = mat_W_2 or 20 * np.ones((dim, dim))
 
         self.array_hist_W_1 = None

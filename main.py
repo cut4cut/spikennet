@@ -17,7 +17,7 @@ parser.add_argument('-model',  type=str, default='GB', help="Model")
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    KEY_INDEX = 2
+    KEY_INDEX = 1
 
     logger = get_logger()
 
@@ -31,10 +31,10 @@ if __name__ == '__main__':
     cols = exp_data.columns
 
     data = exp_data.get_data(KEY_INDEX)
-    folds, width, split = gen_folds(data, n_folds=25)
+    folds, width, split = gen_folds(data, n_folds=5)
     time = np.linspace(0, width, width)
 
-    dnn = SpikeDNNet(2)
+    dnn = SigmaDNNet(2)
 
     k_pnts = 2
     (tr_res, vl_res, mse_res, mae_res,
@@ -46,6 +46,21 @@ if __name__ == '__main__':
         MSE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
         MAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
     """.format(1, k_pnts,
+               np.mean(mse_res[:, 0]), np.std(mse_res[:, 0]),
+               np.mean(mse_res[:, 1]), np.std(mse_res[:, 1]),
+               np.mean(mae_res[:, 0]), np.std(mae_res[:, 0]),
+               np.mean(mae_res[:, 1]), np.std(mae_res[:, 1])
+        )
+    )
+
+    (tr_res, vl_res, mse_res, mae_res,
+     r2_res, norms_W_1, norms_W_2) = dnn_validate(dnn, folds,
+                                                  n_epochs=2, k_points=8)
+    print("""
+        Count epochs: {}, MA data-points: {}
+        MSE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
+        MAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
+    """.format(2, 8,
                np.mean(mse_res[:, 0]), np.std(mse_res[:, 0]),
                np.mean(mse_res[:, 1]), np.std(mse_res[:, 1]),
                np.mean(mae_res[:, 0]), np.std(mae_res[:, 0]),
