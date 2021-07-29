@@ -11,6 +11,7 @@ from spikennet.models import SpikeDNNet, SigmaDNNet
 from spikennet.utils.dataset import ExpData
 from spikennet.utils.logger import get_logger
 from spikennet.utils.prepare import gen_folds
+from spikennet.utils.plot import plot_experiment, plot_article
 
 parser = argparse.ArgumentParser(description='Start model fit.')
 parser.add_argument('-model',  type=str, default='GB', help="Model")
@@ -31,94 +32,54 @@ if __name__ == '__main__':
     cols = exp_data.columns
 
     data = exp_data.get_data(KEY_INDEX)
-    folds, width, split = gen_folds(data, n_folds=5)
+    folds, width, split = gen_folds(data, n_folds=2)
     time = np.linspace(0, width, width)
 
-    dnn = SigmaDNNet(2)
+    dnn = SpikeDNNet(2)
 
     k_pnts = 2
-    (tr_res, vl_res, mse_res, mae_res,
-     r2_res, norms_W_1, norms_W_2) = dnn_validate(dnn, folds,
-                                                  n_epochs=1, k_points=k_pnts)
+    (tr_res, vl_res, mse_res, mae_res, smae_res,
+     norms_W_1, norms_W_2, weights_W_1, weights_W_2) = dnn_validate(dnn,
+                                                                    folds,
+                                                                    n_epochs=1,
+                                                                    k_points=k_pnts)
 
     print("""
         Count epochs: {}, MA data-points: {}
-        MSE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
-        MAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
+         MSE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
+         MAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
+        sMAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
     """.format(1, k_pnts,
                np.mean(mse_res[:, 0]), np.std(mse_res[:, 0]),
                np.mean(mse_res[:, 1]), np.std(mse_res[:, 1]),
                np.mean(mae_res[:, 0]), np.std(mae_res[:, 0]),
-               np.mean(mae_res[:, 1]), np.std(mae_res[:, 1])
+               np.mean(mae_res[:, 1]), np.std(mae_res[:, 1]),
+               np.mean(smae_res[:, 0]), np.std(smae_res[:, 0]),
+               np.mean(smae_res[:, 1]), np.std(smae_res[:, 1])
         )
     )
-
-    (tr_res, vl_res, mse_res, mae_res,
-     r2_res, norms_W_1, norms_W_2) = dnn_validate(dnn, folds,
-                                                  n_epochs=2, k_points=8)
-    print("""
-        Count epochs: {}, MA data-points: {}
-        MSE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
-        MAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
-    """.format(2, 8,
-               np.mean(mse_res[:, 0]), np.std(mse_res[:, 0]),
-               np.mean(mse_res[:, 1]), np.std(mse_res[:, 1]),
-               np.mean(mae_res[:, 0]), np.std(mae_res[:, 0]),
-               np.mean(mae_res[:, 1]), np.std(mae_res[:, 1])
-        )
-    )
-
-    k_pnts = 8
-    (tr_res, vl_res, mse_res, mae_res,
-     r2_res, norms_W_1, norms_W_2) = dnn_validate(dnn, folds,
-                                                  n_epochs=3, k_points=k_pnts)
 
     if True:
         for i, fold in enumerate(folds):
-            tr_target = fold[0][0]
-            tr_control = fold[0][1]
 
-            vl_target = fold[1][0]
-            vl_control = fold[1][1]
+            error = np.abs(fold[0][0][:, 0] - tr_res[i][:, 0])
+            wdiff = [np.diff(weights_W_1[i], axis=0)[:, :, :1].reshape(-1, 2),
+                     np.diff(weights_W_2[i], axis=0)[:, :, :1].reshape(-1, 2)]
 
-            tr_est = tr_res[i]
-            vl_pred = vl_res[i]
+            if False:
+                plot_experiment(i, time, split, width,
+                                tr_target=fold[0][0],
+                                tr_control=fold[0][1],
+                                vl_target=fold[1][0],
+                                vl_control=fold[1][1],
+                                tr_est=tr_res[i],
+                                vl_pred=vl_res[i],
+                                norms_W_1=norms_W_1,
+                                norms_W_2=norms_W_2)
 
-            fig, ax = plt.subplots(3, figsize=(18, 12))
-
-            ax[0].plot(time[:split], tr_target[:, 0])
-            ax[0].plot(time[split:], vl_target[:, 0])
-            ax[0].plot(time[:split], tr_est[:, 0])
-            ax[0].plot(time[split:], vl_pred[:, 0])
-            ax[0].axvline(x=split, c='grey', linestyle='--')
-            ax[0].legend([
-                'train', 'valid',
-                'train predict', 'valid predict'
-                ])
-
-            ax[1].plot(time[:split], tr_control)
-            ax[1].plot(time[split:], vl_control)
-            ax[1].axvline(x=split, c='grey', linestyle='--')
-            ax[1].legend(['train control', 'valid control'])
-
-            ax[2].plot(time[:split-1], norms_W_1[i])
-            ax[2].plot(time[:split-1], norms_W_2[i])
-            ax[2].plot(time[split:], np.ones((width-split)) * norms_W_1[i][-1])
-            ax[2].plot(time[split:], np.ones((width-split)) * norms_W_2[i][-1])
-            ax[2].axvline(x=split, c='grey', linestyle='--')
-            ax[2].legend(['train frobenius norm W1', 'train frobenius norm W2',
-                          'valid frobenius norm W1', 'valid frobenius norm W2'])
-
-            fig.savefig('./report/fold_{}.png'.format(i))
-
-    print("""
-        Count epochs: {}, MA data-points: {}
-        MSE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
-        MAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
-    """.format(3, k_pnts,
-               np.mean(mse_res[:, 0]), np.std(mse_res[:, 0]),
-               np.mean(mse_res[:, 1]), np.std(mse_res[:, 1]),
-               np.mean(mae_res[:, 0]), np.std(mae_res[:, 0]),
-               np.mean(mae_res[:, 1]), np.std(mae_res[:, 1])
-        )
-    )
+            plot_article(i, time, split,
+                         tr_target=fold[0][0],
+                         tr_control=fold[0][1],
+                         tr_est=tr_res[i],
+                         error=error,
+                         weaights_dyn=wdiff)
