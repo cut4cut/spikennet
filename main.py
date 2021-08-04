@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from spikennet.learn import dnn_validate
-from spikennet.models import SpikeDNNet, SigmaDNNet
+from spikennet.models import SpikeDNNet, SigmaDNNet, IzhikevichAF, SigmoidAF
 from spikennet.utils.dataset import ExpData
 from spikennet.utils.logger import get_logger
 from spikennet.utils.prepare import gen_folds
@@ -35,21 +35,24 @@ if __name__ == '__main__':
     folds, width, split = gen_folds(data, n_folds=2)
     time = np.linspace(0, width, width)
 
-    dnn = SpikeDNNet(2)
+    act = SigmoidAF() # IzhikevichAF()
 
-    k_pnts = 2
+    dnn = SpikeDNNet(act.map, act.map, 2)
+    #dnn = SigmaDNNet(2)
+
+    k_pnts = 1
     (tr_res, vl_res, mse_res, mae_res, smae_res,
      norms_W_1, norms_W_2, weights_W_1, weights_W_2) = dnn_validate(dnn,
-                                                                    folds,
+                                                                    folds[:1],
                                                                     n_epochs=1,
                                                                     k_points=k_pnts)
 
     print("""
-        Count epochs: {}, MA data-points: {}
+        Activation: {}, count epochs: {}, MA data-points: {}
          MSE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
          MAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
         sMAE train: mean={:2.6f}, std={:2.6f} valid: mean={:2.6f}, std={:2.6f}
-    """.format(1, k_pnts,
+    """.format('Sigmoid', 1, k_pnts,
                np.mean(mse_res[:, 0]), np.std(mse_res[:, 0]),
                np.mean(mse_res[:, 1]), np.std(mse_res[:, 1]),
                np.mean(mae_res[:, 0]), np.std(mae_res[:, 0]),
@@ -60,7 +63,7 @@ if __name__ == '__main__':
     )
 
     if True:
-        for i, fold in enumerate(folds):
+        for i, fold in enumerate(folds[:1]):
 
             error = np.abs(fold[0][0][:, 0] - tr_res[i][:, 0])
             wdiff = [np.diff(weights_W_1[i], axis=0)[:, :, :1].reshape(-1, 2),
