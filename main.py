@@ -13,6 +13,8 @@ from spikennet.utils.logger import get_logger
 from spikennet.utils.prepare import gen_folds
 from spikennet.utils.plot import plot_experiment, plot_article
 
+DIM = 2
+
 parser = argparse.ArgumentParser(description='Start model fit.')
 parser.add_argument('-model',  type=str, default='GB', help="Model")
 args = parser.parse_args()
@@ -35,10 +37,35 @@ if __name__ == '__main__':
     folds, width, split = gen_folds(data, n_folds=2)
     time = np.linspace(0, width, width)
 
-    act = IzhikevichAF() # IzhikevichAF()
+    act_izh = IzhikevichAF(dim=DIM)
+    act_sig = SigmoidAF()
 
-    dnn = SpikeDNNet(act.map, act.map, 2)
-    # dnn = SigmaDNNet(2)
+    mdls_config = {
+        'izhikevich': {
+            'act_func_1': act_izh.map,
+            'act_func_2': act_izh.map,
+            'dim': DIM,
+            'mat_A': 20 * np.diag([-1, -2]),
+            'mat_P': 1575.9 * np.diag([60, 40]),
+            'mat_K_1': 0.15 * np.diag([10, 1]),
+            'mat_K_2': 0.15 * np.diag([1, 1]),
+            'mat_W_1': 20 * np.ones((DIM, DIM)),
+            'mat_W_2': 20 * np.ones((DIM, DIM))
+        },
+        'sigmoidal': {
+            'act_func_1': act_sig.map,
+            'act_func_2': act_sig.map,
+            'dim': DIM,
+            'mat_A': 20 * np.diag([-2, -2]),
+            'mat_P': 1575.9 * np.diag([60, 40]),
+            'mat_K_1': 0.0001 * np.diag([20, 10]),
+            'mat_K_2': 0.0001 * np.diag([20, 10]),
+            'mat_W_1': 0.1 * np.ones((DIM, DIM)),
+            'mat_W_2': 20 * np.ones((DIM, DIM))
+        }
+    }
+
+    dnn = SpikeDNNet(**mdls_config['sigmoidal'])
 
     k_pnts = 1
     (tr_res, vl_res, mse_res, mae_res, smae_res,

@@ -3,10 +3,10 @@ import numpy as np
 from typing import Union
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-from .models import SpikeDNNet, SigmaDNNet
+from .models import SpikeDNNet
 
 
-def dnn_validate(dnn: Union[SpikeDNNet, SigmaDNNet],
+def dnn_validate(dnn: SpikeDNNet,
                  folds: list,
                  n_epochs: int = 1,
                  k_points: int = 2) -> tuple:
