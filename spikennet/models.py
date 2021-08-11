@@ -19,11 +19,12 @@ class IzhikevichAF(ActFunc):
                  param_b: float = 0.035,
                  param_c: float = -0.055,
                  param_d: float = 0.05,
-                 param_e: float = -0.065):
+                 param_e: float = -0.065,
+                 dim: float = 2):
 
         self.izh_border = izh_border
-        self.control = np.ones(2) * param_b * param_e
-        self.state = np.ones(2) * param_e
+        self.control = np.ones(dim) * param_b * param_e
+        self.state = np.ones(dim) * param_e
 
         self.param_a = param_a
         self.param_b = param_b
@@ -31,14 +32,17 @@ class IzhikevichAF(ActFunc):
         self.param_d = param_d
         self.param_e = param_e
 
+        self.dim = dim
+
     def map(self,
             input: np.ndarray,
             step: float = 0.01) -> np.ndarray:
 
+        vec_scale = np.ones(self.dim)
         _state = self.state + step * (
                             0.04 * self.state @ self.state
                             + 5 * self.state + 140 - self.control
-                            + np.ones(2) * input
+                            + input
                         )
 
         self.control = self.control + step * (
@@ -49,8 +53,8 @@ class IzhikevichAF(ActFunc):
                                         )
 
         if np.all(_state > self.izh_border):
-            self.state = np.ones(2) * self.param_c
-            self.control = np.ones(2) * self.param_d
+            self.state = vec_scale * self.param_c
+            self.control = vec_scale * self.param_d
         else:
             self.state = _state
 
@@ -162,24 +166,28 @@ class SpikeDNNet(object):
                 vec_est[i+1] = vec_est[i] + step * (
                                         self.mat_A@vec_est[i]
                                         + self.mat_W_1@self.afunc_1(vec_est[i])
-                                        + self.mat_W_2@self.afunc_2(vec_est[i])
-                                        * vec_u[i]
+                                        + self.mat_W_2@np.diag(
+                                                self.afunc_2(vec_est[i])
+                                            )
+                                        @ vec_u[i]
                                     )
 
                 self.mat_W_1 = self.mat_W_1 - step * (
-                                                self.mat_K_1
-                                                @ self.mat_P
-                                                @ delta[i]
-                                                @ self.afunc_1(vec_est[i])
-                                            )
+                                            self.mat_K_1
+                                            @ self.mat_P
+                                            @ delta[i]
+                                            @ self.afunc_1(vec_est[i])
+                                        )
 
                 self.mat_W_2 = self.mat_W_2 - step * (
-                                                self.mat_K_2
-                                                @ self.mat_P
-                                                @ delta[i]
-                                                @ self.afunc_2(vec_est[i])
-                                                * vec_u[i]
-                                            )
+                                            self.mat_K_2
+                                            @ self.mat_P
+                                            @ delta[i]
+                                            @ np.diag(
+                                                self.afunc_2(vec_est[i])
+                                             )
+                                            @ vec_u[i]
+                                        )
 
                 self.array_hist_W_1[i] = self.mat_W_1.copy()
                 self.array_hist_W_2[i] = self.mat_W_2.copy()
@@ -207,7 +215,7 @@ class SpikeDNNet(object):
                                     self.mat_A@vec_est[i]
                                     + mat_W_1@self.afunc_1(vec_est[i])
                                     + mat_W_2@self.afunc_2(vec_est[i])
-                                    * vec_u[i]
+                                    @ vec_u[i]
                                 )
 
         return vec_est

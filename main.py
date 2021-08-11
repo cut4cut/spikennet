@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from spikennet.learn import dnn_validate
-from spikennet.models import SpikeDNNet, SigmaDNNet, IzhikevichAF, SigmoidAF
+from spikennet.models import SpikeDNNet, IzhikevichAF, SigmoidAF
 from spikennet.utils.dataset import ExpData
 from spikennet.utils.logger import get_logger
 from spikennet.utils.prepare import gen_folds
@@ -35,10 +35,10 @@ if __name__ == '__main__':
     folds, width, split = gen_folds(data, n_folds=2)
     time = np.linspace(0, width, width)
 
-    act = SigmoidAF() # IzhikevichAF()
+    act = IzhikevichAF() # IzhikevichAF()
 
     dnn = SpikeDNNet(act.map, act.map, 2)
-    #dnn = SigmaDNNet(2)
+    # dnn = SigmaDNNet(2)
 
     k_pnts = 1
     (tr_res, vl_res, mse_res, mae_res, smae_res,

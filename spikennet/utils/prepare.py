@@ -56,7 +56,10 @@ def gen_folds(data: pd.DataFrame,
             targets = data.iloc[start:end, from_col:to_col].values
 
         targets = data.iloc[start:end, from_col:to_col].values
+        # TODO 
+        # fix this
         controls = data.iloc[start:end, 5].values
+        controls = np.vstack([controls, controls]).T.copy()
 
         datasets = [(targets[r_bound:split],
                      controls[r_bound:split]),
