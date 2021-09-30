@@ -7,6 +7,7 @@ import pandas as pd
 
 from scipy import fftpack
 from numpy.fft import rfft, irfft, rfftfreq
+from scipy.spatial.transform import Rotation as R
 
 
 logger = logging.getLogger('spikennet.main')
@@ -94,6 +95,32 @@ def load_txt(file_name: str, size: int = 9) -> np.array:
                 if cnt > 1:
                     break
     return data[1:]
+
+def prep_files(root: str) -> list:
+    columns = ['Frequency', 'Amplitude', 'LeftYaw', 'RightYaw', 'RotAngleZ', 'RotAngleY', 'RotAngleX']
+    work_dir = './data/raw/{}/'.format(root)
+    datasets = []
+    for filename in os.listdir(work_dir):
+        if filename.endswith('.txt'):
+            file_path = os.path.join(work_dir, filename)
+            print(file_path)
+            raw_data = load_txt(file_path)
+
+            eye_angles = np.radians(raw_data[:, 1:3])
+            freq_amplitudes = np.zeros((raw_data.shape[0], 2), dtype='float64')
+            head_angles = np.zeros((raw_data.shape[0], 3), dtype='float64')
+            for i in range(0, raw_data.shape[0]-1):
+                q = R.from_quat(raw_data[i, 3:7])
+                head_angles[i, :] = q.as_euler('zyx', degrees=False)
+
+            prep_data = np.concatenate((freq_amplitudes, eye_angles, head_angles), axis=1)
+
+            prep_df = pd.DataFrame(data=prep_data, columns=columns)
+            prep_df.to_csv('./data/prep/{}/{}'.format(root, filename), index=False)
+
+            datasets.append(prep_df)
+
+    return datasets
 
 
 def make_learn_data(folder: str) -> None:

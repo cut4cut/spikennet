@@ -128,18 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Raw data
-data/raw/*
-
-# PDF's file
-*.pdf
-
 # Archive
 *.zip
 *.rar
-
-# Images
-*.png
 
 # MacOS specific file 
 .DS_Store
