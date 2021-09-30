@@ -3,7 +3,7 @@
 This repo include implementation of spiking differential neural network (SDNN) and examples of learning SDNN on 3 experimental datasets (`winter`, `flights`, `optokinetics`). All datasets contain records of the angles of rotation of the eye and head which describe the vestibulo-ocular reflex (VOR). 
 
 <p align="center">
-<img align="middle" src="./report/articl_plot_0.png" alt="SDNN Demo" width="500" height="250" />
+<img align="middle" src="./report/articl_plot_0.png" alt="SDNN Demo" width="800" height="450" />
 </p>
 
 ## Basic usage
