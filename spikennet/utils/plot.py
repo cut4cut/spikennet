@@ -105,7 +105,7 @@ def plot_article(i: int,
 
     # axs[0, 0].set_xticks(np.arange(len(time)))
 
-    axs[1, 0].legend(['Identification', 'Imperical data'])
+    axs[1, 0].legend(['Identification', 'Experimental data'])
     axs[1, 1].legend(['W_1', 'W_2'])
 
     axs[0, 0].text(-0.1, 1., 'A', transform=axs[0, 0].transAxes,
