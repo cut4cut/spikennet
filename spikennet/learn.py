@@ -10,7 +10,9 @@ def dnn_validate(dnn: SpikeDNNet,
                  folds: list,
                  n_epochs: int = 1,
                  k_points: int = 2) -> tuple:
-
+    """Learn model on folds and
+        save metrics of learning.
+    """
     mse_res = np.ones((len(folds), 2))
     mae_res = np.ones((len(folds), 2))
     smae_res = np.ones((len(folds), 2))

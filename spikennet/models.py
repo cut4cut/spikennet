@@ -4,15 +4,21 @@ import numpy as np
 
 
 class ActFunc(ABC):
+    """Base class for activation function.
+    """
     def __init__(self):
         pass
 
     def map(self, input: np.ndarray) -> np.ndarray:
+        """Mapping input vector to output vector.
+        """
         return input
 
 
 class IzhikevichAF(ActFunc):
-
+    """Implementation Izhikevich model like
+        activation function.
+    """
     def __init__(self,
                  izh_border: float = 0.18,
                  param_a: float = 0.00002,
@@ -51,7 +57,7 @@ class IzhikevichAF(ActFunc):
                                             - self.control
                                             )
                                         )
-
+        # Reset model's state 
         if np.all(_state > self.izh_border):
             self.state = vec_scale * self.param_c
             self.control = vec_scale * self.param_d
@@ -62,7 +68,8 @@ class IzhikevichAF(ActFunc):
 
 
 class SigmoidAF(ActFunc):
-
+    """Sigmoidal activation function.
+    """
     def __init__(self,
                  param_a: float = 1.,
                  param_b: float = 1.,
@@ -81,7 +88,9 @@ class SigmoidAF(ActFunc):
 
 
 class SpikeDNNet(object):
-
+    """Implementation of spike
+        differential neuronetwork.
+    """
     def __init__(self,
                  act_func_1: ActFunc.map,
                  act_func_2: ActFunc.map,
@@ -159,6 +168,7 @@ class SpikeDNNet(object):
                 self.mat_W_1 = self.smoothed_W_1[-1].copy()
                 self.mat_W_2 = self.smoothed_W_2[-1].copy()
 
+            # Euler integration algorithm
             for i in range(nt-1):
 
                 delta = vec_est - vec_x
@@ -183,7 +193,7 @@ class SpikeDNNet(object):
                                             self.mat_K_2
                                             @ self.mat_P
                                             @ delta[i]
-                                            @ np.diag(
+                                            @ np.diag( # map vector est to diagonal matrix
                                                 self.afunc_2(vec_est[i])
                                              )
                                             @ vec_u[i]
@@ -209,6 +219,7 @@ class SpikeDNNet(object):
         mat_W_1 = self.smoothed_W_1[-1]
         mat_W_2 = self.smoothed_W_2[-1]
 
+        # Euler integration algorithm
         for i in range(nt-1):
 
             vec_est[i+1] = vec_est[i] + step * (

@@ -13,7 +13,9 @@ import matplotlib.pyplot as plt
 
 
 class ExpData(object):
-
+    """Wrapper of preparing winter dataset
+        for learning of SpikeDNNet.
+    """
     def __init__(self,
                  file_name: str,
                  raw_data_folder: str = './data/raw/',
@@ -127,7 +129,7 @@ class ExpData(object):
 
 
 class DynamicSystem(object):
-
+    
     def __init__(self, dyn_sys_func):
         self.dyn_sys_func = dyn_sys_func
         self.dyn_values = None

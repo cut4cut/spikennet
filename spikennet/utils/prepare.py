@@ -15,6 +15,8 @@ logger = logging.getLogger('spikennet.main')
 
 def dff_transform(data: np.ndarray,
                   freq_bounds: tuple = (0, 0.99)) -> np.ndarray:
+    """Fourier transform of vectors.
+    """
     length, ncols = data.shape
     data_tranform = np.empty_like(data)
     frequencies = rfftfreq(length, d=1e-2)
@@ -38,7 +40,8 @@ def gen_folds(data: pd.DataFrame,
               t_cols: tuple = (2, 4),
               win_bounds: tuple = (20, 20),
               transform_flg: bool = False):
-
+    """Generate folds for experiments.
+    """
     folds = []
     from_col, to_col = t_cols
     r_bound, l_bound = win_bounds
@@ -83,6 +86,9 @@ def convert(s: str) -> np.array:
 
 
 def load_txt(file_name: str, size: int = 9) -> np.array:
+    """Load txt-file to np.array. Useful for 
+        flights and optokinetics datasets.
+    """
     data = np.ones(size)
     with open(file_name, 'r') as file:
         cnt = 0
@@ -97,6 +103,9 @@ def load_txt(file_name: str, size: int = 9) -> np.array:
     return data[1:]
 
 def prep_files(root: str) -> list:
+    """Prepare and load flights and optokinetics datasets
+        for learning. 
+    """
     columns = ['Frequency', 'Amplitude', 'LeftYaw', 'RightYaw', 'RotAngleZ', 'RotAngleY', 'RotAngleX']
     work_dir = './data/raw/{}/'.format(root)
     datasets = []
