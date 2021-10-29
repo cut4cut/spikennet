@@ -4,6 +4,8 @@ import textwrap
 import numpy as np
 import matplotlib.pyplot as plt
 
+from sklearn.linear_model import LinearRegression
+
 from spikennet.learn import dnn_validate
 from spikennet.models import SpikeDNNet, IzhikevichAF, SigmoidAF
 from spikennet.utils.dataset import ExpData
@@ -68,10 +70,6 @@ if __name__ == '__main__':
     if args.dataset == 'winter':
         exp_data = ExpData('data_132591818490899344_.txt')
         exp_data.prep()
-
-        keys = exp_data.keys
-        cols = exp_data.columns
-
         data = exp_data.get_data(KEY_INDEX)
     else:
         data = prep_files(args.dataset) # flights, optokinetics
@@ -122,6 +120,9 @@ if __name__ == '__main__':
             smae_res[:, 0]
         )
     )
+
+    with open('./data/est.npy', 'wb') as f:
+        np.save(f, tr_res[0])
 
     if args.plot:
         for i, fold in enumerate(folds[:1]):
